@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     
     # Retrieval settings
     top_k: int = 3
+    chunk_size: int = 200
+    chunk_overlap: int = 50
     
     # Database settings
     database_url: Optional[str] = None

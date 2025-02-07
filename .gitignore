@@ -47,6 +47,3 @@ env/
 # OS
 .DS_Store
 Thumbs.db 
-
-# Test samples
-tests/samples/ 

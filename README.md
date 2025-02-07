@@ -45,129 +45,41 @@ pip install sentence-transformers>=2.2.2 faiss-cpu>=1.7.4 pydantic>=2.7.0 pydant
 
 ## Testing the Installation
 
-### Basic Test
-
-Run the simple example to verify the installation:
+Run the detailed test example to verify the installation and understand how the system works:
 
 ```bash
-python examples/rag_example.py
+python examples/detailed_test.py
 ```
 
-### Detailed Testing with Logging
+This script provides a comprehensive demonstration of the RAG system, showing each step of the process:
 
-For a more comprehensive test that shows what's happening under the hood:
+1. **Text Management**: Adding and retrieving documents from the database
+2. **Text Chunking**: Breaking documents into manageable pieces
+3. **Embedding Generation**: Converting text into vector representations
+4. **Vector Search**: Finding the most relevant text chunks for a query
+5. **Results Inspection**: Detailed logging of the entire process
 
-```bash
-python examples/rag_example_with_logging.py
-```
+The example uses PostgreSQL for storage and FAISS for efficient similarity search.
 
-This will test each component individually and show detailed logs:
-1. Embedding Model: Tests text encoding and shows embedding dimensions
-2. Database: Tests document storage and retrieval
-3. FAISS Retriever: Tests index creation and similarity search
-4. Complete RAG System: Tests the full pipeline with real queries
+## Configuration
 
-Example output:
-```
-2024-02-07 11:00:00 - rag_test - INFO - Starting RAG system tests...
-2024-02-07 11:00:01 - rag_test - INFO - Testing Embedding Model...
-2024-02-07 11:00:01 - rag_test - INFO - Model name: all-MiniLM-L6-v2
-2024-02-07 11:00:01 - rag_test - INFO - Embedding dimension: 384
-...
-```
-
-## Quick Start
+Key settings can be configured through environment variables or the `config.py` file:
 
 ```python
-import asyncio
-from musiol_rag.core.embeddings import EmbeddingModel
-from musiol_rag.core.retrieval import FAISSRetriever
-from musiol_rag.core.rag import RAGWrapper
-from musiol_rag.database.memory import InMemoryDatabase
+# Embedding settings
+embedding_model: str = "all-MiniLM-L6-v2"
 
-async def main():
-    # Initialize components
-    embedding_model = EmbeddingModel()
-    database = InMemoryDatabase()
-    retriever = FAISSRetriever(embedding_model)
-    
-    # Create RAG wrapper
-    rag = RAGWrapper(
-        embedding_provider=embedding_model,
-        database_provider=database,
-        retriever_provider=retriever
-    )
-    
-    # Add documents
-    await rag.add_document("Your text document here...")
-    
-    # Query
-    results = await rag.query("Your query here", k=3)
-    print(results)
+# Retrieval settings
+top_k: int = 3
+chunk_size: int = 200
+chunk_overlap: int = 50
 
-if __name__ == "__main__":
-    asyncio.run(main())
-```
+# Database settings
+database_url: Optional[str] = None
+database_type: str = "postgresql"
 
-## Integration Patterns
-
-### 1. Basic Integration
-
-Use the provided components as is:
-
-```python
-from musiol_rag.core.rag import RAGWrapper
-from musiol_rag.core.embeddings import EmbeddingModel
-from musiol_rag.core.retrieval import FAISSRetriever
-from musiol_rag.database.memory import InMemoryDatabase
-
-# Create and use the RAG system
-rag = RAGWrapper(
-    embedding_provider=EmbeddingModel(),
-    database_provider=InMemoryDatabase(),
-    retriever_provider=FAISSRetriever(embedding_model)
-)
-```
-
-### 2. Custom Database Integration
-
-Implement your own database provider:
-
-```python
-from musiol_rag.core.rag import DatabaseProvider
-from typing import List
-
-class YourDatabaseProvider(DatabaseProvider):
-    async def add_text(self, text: str) -> None:
-        # Your implementation
-        ...
-    
-    async def get_texts(self) -> List[str]:
-        # Your implementation
-        ...
-    
-    async def clear(self) -> None:
-        # Your implementation
-        ...
-```
-
-### 3. Custom Embedding Provider
-
-Use a different embedding model:
-
-```python
-from musiol_rag.core.rag import EmbeddingProvider
-import numpy as np
-from typing import List
-
-class YourEmbeddingProvider(EmbeddingProvider):
-    def encode(self, texts: List[str]) -> np.ndarray:
-        # Your implementation
-        ...
-    
-    def encode_single(self, text: str) -> np.ndarray:
-        # Your implementation
-        ...
+# FAISS settings
+faiss_index_path: Optional[str] = "faiss_index.bin"
 ```
 
 ## Architecture
@@ -191,9 +103,6 @@ cd musiol-rag
 
 # Install development dependencies
 pip install -e ".[dev]"
-
-# Run tests
-pytest tests/
 ```
 
 ## License
