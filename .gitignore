@@ -46,4 +46,7 @@ env/
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# spaCy models
+en_core_web_sm-* 
