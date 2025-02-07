@@ -17,10 +17,6 @@ class Settings(BaseSettings):
     database_url: Optional[str] = None
     database_type: str = "postgresql"  # or "sqlite"
     
-    # API settings
-    api_host: str = "0.0.0.0"
-    api_port: int = 8000
-    
     # FAISS settings
     faiss_index_path: Optional[str] = "faiss_index.bin"
 
