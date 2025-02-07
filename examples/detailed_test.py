@@ -11,6 +11,7 @@ import getpass
 
 from musiol_rag.core.embeddings import EmbeddingModel
 from musiol_rag.core.retrieval import FAISSRetriever
+from musiol_rag.core.chunking import TextChunker
 from musiol_rag.database.postgresql import PostgreSQLDatabase
 from musiol_rag.config import settings
 
@@ -38,19 +39,17 @@ async def inspect_original_texts(db: PostgreSQLDatabase):
         logger.info("")
 
 def create_text_chunks(texts: List[str], chunk_size: int = None, overlap: int = None) -> List[str]:
-    """Create overlapping chunks from texts."""
+    """Create chunks from texts using sentence boundary detection."""
     chunk_size = chunk_size or settings.chunk_size
-    overlap = overlap or settings.chunk_overlap
     
-    logger.info(f"Chunking with size={chunk_size}, overlap={overlap}")
+    # Initialize chunker with specified chunk size
+    chunker = TextChunker(max_chunk_size=chunk_size)
+    
+    # Process each text and combine chunks
     chunks = []
     for text in texts:
-        if len(text) <= chunk_size:
-            chunks.append(text)
-        else:
-            for i in range(0, len(text) - overlap, chunk_size - overlap):
-                chunk = text[i:i + chunk_size]
-                chunks.append(chunk)
+        chunks.extend(chunker.create_chunks(text))
+    
     return chunks
 
 def inspect_chunks(chunks: List[str]):

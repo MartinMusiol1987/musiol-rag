@@ -7,6 +7,7 @@ A modular Retrieval-Augmented Generation (RAG) system designed for easy integrat
 - Modular design with dependency injection
 - Simple interface for document management and querying
 - Flexible embedding and retrieval providers
+- Intelligent text chunking with sentence boundary detection
 - Async support
 - Easy to extend and customize
 
@@ -18,6 +19,9 @@ There are several ways to integrate this package into your project:
 
 ```bash
 pip install git+https://github.com/MartinMusiol1987/musiol-rag.git
+
+# Install required spaCy model
+python -m spacy download en_core_web_sm
 ```
 
 ### 2. Local Development Install
@@ -31,6 +35,9 @@ cd musiol-rag
 
 # Install in editable mode
 pip install -e .
+
+# Install required spaCy model
+python -m spacy download en_core_web_sm
 ```
 
 ### 3. Copy Required Components
@@ -40,7 +47,10 @@ If you need to heavily customize the implementation or can't use pip install:
 1. Copy the `src/musiol_rag` directory into your project
 2. Install the required dependencies:
 ```bash
-pip install sentence-transformers>=2.2.2 faiss-cpu>=1.7.4 pydantic>=2.7.0 pydantic-settings>=2.7.0 numpy>=1.24.3
+pip install sentence-transformers>=2.2.2 faiss-cpu>=1.7.4 pydantic>=2.7.0 pydantic-settings>=2.7.0 numpy>=1.24.3 spacy>=3.7.0
+
+# Install required spaCy model
+python -m spacy download en_core_web_sm
 ```
 
 ## Testing the Installation
@@ -54,7 +64,7 @@ python examples/detailed_test.py
 This script provides a comprehensive demonstration of the RAG system, showing each step of the process:
 
 1. **Text Management**: Adding and retrieving documents from the database
-2. **Text Chunking**: Breaking documents into manageable pieces
+2. **Intelligent Text Chunking**: Breaking documents into semantically meaningful pieces using sentence boundary detection
 3. **Embedding Generation**: Converting text into vector representations
 4. **Vector Search**: Finding the most relevant text chunks for a query
 5. **Results Inspection**: Detailed logging of the entire process
@@ -71,8 +81,7 @@ embedding_model: str = "all-MiniLM-L6-v2"
 
 # Retrieval settings
 top_k: int = 3
-chunk_size: int = 200
-chunk_overlap: int = 50
+chunk_size: int = 200  # Maximum size of text chunks in characters
 
 # Database settings
 database_url: Optional[str] = None
@@ -84,11 +93,12 @@ faiss_index_path: Optional[str] = "faiss_index.bin"
 
 ## Architecture
 
-The system uses a modular architecture with three main components:
+The system uses a modular architecture with four main components:
 
-1. **Embedding Provider**: Converts text into vector embeddings
-2. **Database Provider**: Stores and manages text documents
-3. **Retriever Provider**: Indexes and retrieves relevant documents
+1. **Text Chunker**: Splits documents into semantically meaningful chunks using spaCy's sentence boundary detection
+2. **Embedding Provider**: Converts text into vector embeddings
+3. **Database Provider**: Stores and manages text documents
+4. **Retriever Provider**: Indexes and retrieves relevant documents
 
 Each component follows a Protocol interface, making it easy to swap implementations or create custom ones.
 
@@ -103,6 +113,9 @@ cd musiol-rag
 
 # Install development dependencies
 pip install -e ".[dev]"
+
+# Install required spaCy model
+python -m spacy download en_core_web_sm
 ```
 
 ## License
