@@ -3,10 +3,10 @@ Example usage of the RAG wrapper.
 """
 import asyncio
 from pathlib import Path
-from src.core.embeddings import EmbeddingModel
-from src.core.retrieval import FAISSRetriever
-from src.core.rag import RAGWrapper
-from tests.samples.test_database import InMemoryDatabase
+from musiol_rag.core.embeddings import EmbeddingModel
+from musiol_rag.core.retrieval import FAISSRetriever
+from musiol_rag.core.rag import RAGWrapper
+from musiol_rag.database.memory import InMemoryDatabase
 
 async def main():
     # Initialize components with dependency injection
