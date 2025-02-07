@@ -1,7 +1,7 @@
-    """
+"""
 Configuration settings for Musiol-RAG.
 """
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     top_k: int = 3
     
     # Database settings
-    database_url: str
+    database_url: Optional[str] = None
     database_type: str = "postgresql"  # or "sqlite"
     
     # API settings

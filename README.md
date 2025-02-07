@@ -1,233 +1,88 @@
-# Musiol-RAG
+# Musiol RAG
 
-A powerful, modular Retrieval-Augmented Generation (RAG) system that combines database retrieval with GPT-4 for accurate, context-aware responses. This system is designed to be database-agnostic and easily integrable into existing projects.
+A modular Retrieval-Augmented Generation (RAG) system designed for easy integration into larger projects.
 
 ## Features
 
-### Core Features
-- 🔍 **Vector Similarity Search**: FAISS-powered efficient similarity search
-- 🧠 **Flexible Embedding Models**: Default to 'all-MiniLM-L6-v2' with support for other models
-- 💾 **Database Agnostic**: Support for multiple database types (PostgreSQL implemented)
-- 🤖 **GPT-4 Integration**: Advanced language model for high-quality responses
-- 🌐 **REST API**: FastAPI-based interface for service integration
-- ⚡ **Async Support**: Built with asyncio for high performance
-- 📊 **Comprehensive Logging**: Detailed system monitoring
-
-### Technical Capabilities
-- Semantic search using FAISS vector similarity
-- Configurable number of context chunks (top-k) for retrieval
-- Customizable embedding models
-- Persistent vector index storage
-- Automatic index updates
-- Error handling and recovery
+- Modular design with dependency injection
+- Simple interface for document management and querying
+- Flexible embedding and retrieval providers
+- Async support
+- Easy to extend and customize
 
 ## Installation
 
-1. Clone the repository:
 ```bash
-git clone [repository-url]
-cd musiol_rag
+pip install musiol-rag
 ```
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+## Quick Start
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-## Configuration
-
-### Environment Variables
-Create a `.env` file in the root directory:
-```env
-# Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-DATABASE_TYPE=postgresql  # or sqlite
-
-# OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key
-
-# API Configuration (optional)
-API_HOST=0.0.0.0
-API_PORT=8000
-
-# Embedding Configuration (optional)
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-```
-
-### Configuration Options (`config.py`)
-- `embedding_model`: Choice of sentence transformer model
-- `top_k`: Number of relevant chunks to retrieve (default: 3)
-- `database_type`: Database backend to use
-- `api_host` and `api_port`: API server configuration
-- `faiss_index_path`: Location for storing the FAISS index
-
-## Database Setup
-
-### PostgreSQL Setup
-1. Create a database and user:
-```sql
-CREATE DATABASE your_database;
-CREATE USER your_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE your_database TO your_user;
-```
-
-2. Create the required table:
-```sql
-CREATE TABLE documents (
-    id SERIAL PRIMARY KEY,
-    content TEXT NOT NULL,
-    metadata JSONB DEFAULT '{}'
-);
-```
-
-## Usage
-
-### As a Library
-
-1. Basic Usage:
 ```python
 import asyncio
-from musiol_rag.database.postgresql import PostgreSQLDatabase
-from musiol_rag.core.rag_engine import RAGEngine
+from musiol_rag.core.embeddings import EmbeddingModel
+from musiol_rag.core.retrieval import FAISSRetriever
+from musiol_rag.core.rag import RAGWrapper
+from musiol_rag.database.memory import InMemoryDatabase
 
 async def main():
-    # Initialize database
-    database = await PostgreSQLDatabase.from_connection_string(
-        "postgresql://user:password@localhost:5432/dbname"
+    # Initialize components
+    embedding_model = EmbeddingModel()
+    database = InMemoryDatabase()
+    retriever = FAISSRetriever(embedding_model)
+    
+    # Create RAG wrapper
+    rag = RAGWrapper(
+        embedding_provider=embedding_model,
+        database_provider=database,
+        retriever_provider=retriever
     )
     
-    # Initialize RAG
-    rag = RAGEngine(
-        database=database,
-        openai_api_key="your-api-key"
-    )
-    
-    # Initialize system
-    await rag.initialize()
+    # Add documents
+    await rag.add_document("Your text document here...")
     
     # Query
-    result = await rag.query("Your question here?")
-    print(result["answer"])
+    results = await rag.query("Your query here", k=3)
+    print(results)
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-### As a Service
+## Architecture
 
-1. Start the API server:
-```bash
-uvicorn musiol_rag.api.rest:app --host 0.0.0.0 --port 8000
-```
+The system uses a modular architecture with three main components:
 
-2. Use the API endpoints:
-- Query endpoint:
-```bash
-curl -X POST "http://localhost:8000/query" \
-     -H "Content-Type: application/json" \
-     -d '{"question": "Your question here?", "max_tokens": 500}'
-```
+1. **Embedding Provider**: Converts text into vector embeddings
+2. **Database Provider**: Stores and manages text documents
+3. **Retriever Provider**: Indexes and retrieves relevant documents
 
-- Update index endpoint:
-```bash
-curl -X POST "http://localhost:8000/update-index"
-```
+Each component follows a Protocol interface, making it easy to swap implementations or create custom ones.
 
-## Core Components
+## Customization
 
-### 1. RAG Engine (`core/rag_engine.py`)
-The main orchestrator that:
-- Manages the retrieval process
-- Handles LLM interactions
-- Combines context with queries
-- Formats responses
+You can create custom providers by implementing the following protocols:
 
-### 2. Embedding System (`core/embeddings.py`)
-Handles text embeddings with features:
-- Multiple model support
-- Caching capabilities
-- Batch processing
-- Dimension management
-
-### 3. Retrieval System (`core/retrieval.py`)
-FAISS-based retrieval with:
-- Efficient similarity search
-- Index persistence
-- Dynamic updates
-- Configurable retrieval size
-
-### 4. Database Layer (`database/`)
-Abstract database interface with:
-- Connection pooling
-- Async operations
-- Error handling
-- Metadata support
-
-### 5. API Layer (`api/`)
-FastAPI implementation providing:
-- RESTful endpoints
-- Request validation
-- Error handling
-- Swagger documentation
-
-## Advanced Features
-
-### Custom Embedding Models
-Change the embedding model:
 ```python
-rag = RAGEngine(
-    database=database,
-    embedding_model="all-mpnet-base-v2"  # Higher quality, slower
-)
+class EmbeddingProvider(Protocol):
+    def encode(self, texts: List[str]) -> np.ndarray: ...
+    def encode_single(self, text: str) -> np.ndarray: ...
+
+class DatabaseProvider(Protocol):
+    async def add_text(self, text: str) -> None: ...
+    async def get_texts(self) -> List[str]: ...
+    async def clear(self) -> None: ...
+
+class RetrieverProvider(Protocol):
+    async def update_index(self, database: DatabaseProvider) -> None: ...
+    async def get_relevant_texts(
+        self, 
+        query: str, 
+        database: DatabaseProvider,
+        k: Optional[int] = None
+    ) -> List[str]: ...
 ```
-
-### Adjusting Retrieved Context
-Modify the number of context chunks:
-```python
-# In config.py or environment
-settings.top_k = 5  # Retrieve more context
-```
-
-### Custom Database Implementation
-Implement new databases by extending `BaseDatabase`:
-```python
-class YourDatabase(BaseDatabase):
-    async def get_texts(self, query: Optional[str] = None) -> List[str]:
-        # Your implementation
-        pass
-    # ... implement other methods
-```
-
-## Error Handling
-
-The system includes comprehensive error handling:
-- Database connection errors
-- Embedding model errors
-- LLM API errors
-- Index corruption detection
-- API request validation
-
-## Performance Considerations
-
-- FAISS index is memory-resident for fast retrieval
-- Connection pooling for database operations
-- Async operations for better concurrency
-- Batch processing for embeddings
-- Configurable caching
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
 
 ## License
 
-[Your License Here] 
+MIT License - see LICENSE file for details. 
