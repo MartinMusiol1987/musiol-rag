@@ -43,6 +43,39 @@ If you need to heavily customize the implementation or can't use pip install:
 pip install sentence-transformers>=2.2.2 faiss-cpu>=1.7.4 pydantic>=2.7.0 pydantic-settings>=2.7.0 numpy>=1.24.3
 ```
 
+## Testing the Installation
+
+### Basic Test
+
+Run the simple example to verify the installation:
+
+```bash
+python examples/rag_example.py
+```
+
+### Detailed Testing with Logging
+
+For a more comprehensive test that shows what's happening under the hood:
+
+```bash
+python examples/rag_example_with_logging.py
+```
+
+This will test each component individually and show detailed logs:
+1. Embedding Model: Tests text encoding and shows embedding dimensions
+2. Database: Tests document storage and retrieval
+3. FAISS Retriever: Tests index creation and similarity search
+4. Complete RAG System: Tests the full pipeline with real queries
+
+Example output:
+```
+2024-02-07 11:00:00 - rag_test - INFO - Starting RAG system tests...
+2024-02-07 11:00:01 - rag_test - INFO - Testing Embedding Model...
+2024-02-07 11:00:01 - rag_test - INFO - Model name: all-MiniLM-L6-v2
+2024-02-07 11:00:01 - rag_test - INFO - Embedding dimension: 384
+...
+```
+
 ## Quick Start
 
 ```python
@@ -74,19 +107,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-```
-
-## Testing the Installation
-
-After installation, you can run the example script to verify everything works:
-
-```bash
-# Clone the repository if you haven't already
-git clone https://github.com/MartinMusiol1987/musiol-rag.git
-cd musiol-rag
-
-# Run the example
-python examples/rag_example.py
 ```
 
 ## Integration Patterns
