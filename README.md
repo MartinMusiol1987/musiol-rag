@@ -12,8 +12,35 @@ A modular Retrieval-Augmented Generation (RAG) system designed for easy integrat
 
 ## Installation
 
+There are several ways to integrate this package into your project:
+
+### 1. Install from GitHub (Recommended during development)
+
 ```bash
-pip install musiol-rag
+pip install git+https://github.com/MartinMusiol1987/musiol-rag.git
+```
+
+### 2. Local Development Install
+
+If you want to modify the package while using it:
+
+```bash
+# Clone the repository
+git clone https://github.com/MartinMusiol1987/musiol-rag.git
+cd musiol-rag
+
+# Install in editable mode
+pip install -e .
+```
+
+### 3. Copy Required Components
+
+If you need to heavily customize the implementation or can't use pip install:
+
+1. Copy the `src/musiol_rag` directory into your project
+2. Install the required dependencies:
+```bash
+pip install sentence-transformers>=2.2.2 faiss-cpu>=1.7.4 pydantic>=2.7.0 pydantic-settings>=2.7.0 numpy>=1.24.3
 ```
 
 ## Quick Start
@@ -49,6 +76,80 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Testing the Installation
+
+After installation, you can run the example script to verify everything works:
+
+```bash
+# Clone the repository if you haven't already
+git clone https://github.com/MartinMusiol1987/musiol-rag.git
+cd musiol-rag
+
+# Run the example
+python examples/rag_example.py
+```
+
+## Integration Patterns
+
+### 1. Basic Integration
+
+Use the provided components as is:
+
+```python
+from musiol_rag.core.rag import RAGWrapper
+from musiol_rag.core.embeddings import EmbeddingModel
+from musiol_rag.core.retrieval import FAISSRetriever
+from musiol_rag.database.memory import InMemoryDatabase
+
+# Create and use the RAG system
+rag = RAGWrapper(
+    embedding_provider=EmbeddingModel(),
+    database_provider=InMemoryDatabase(),
+    retriever_provider=FAISSRetriever(embedding_model)
+)
+```
+
+### 2. Custom Database Integration
+
+Implement your own database provider:
+
+```python
+from musiol_rag.core.rag import DatabaseProvider
+from typing import List
+
+class YourDatabaseProvider(DatabaseProvider):
+    async def add_text(self, text: str) -> None:
+        # Your implementation
+        ...
+    
+    async def get_texts(self) -> List[str]:
+        # Your implementation
+        ...
+    
+    async def clear(self) -> None:
+        # Your implementation
+        ...
+```
+
+### 3. Custom Embedding Provider
+
+Use a different embedding model:
+
+```python
+from musiol_rag.core.rag import EmbeddingProvider
+import numpy as np
+from typing import List
+
+class YourEmbeddingProvider(EmbeddingProvider):
+    def encode(self, texts: List[str]) -> np.ndarray:
+        # Your implementation
+        ...
+    
+    def encode_single(self, text: str) -> np.ndarray:
+        # Your implementation
+        ...
+```
+
 ## Architecture
 
 The system uses a modular architecture with three main components:
@@ -59,28 +160,20 @@ The system uses a modular architecture with three main components:
 
 Each component follows a Protocol interface, making it easy to swap implementations or create custom ones.
 
-## Customization
+## Development
 
-You can create custom providers by implementing the following protocols:
+To set up for development:
 
-```python
-class EmbeddingProvider(Protocol):
-    def encode(self, texts: List[str]) -> np.ndarray: ...
-    def encode_single(self, text: str) -> np.ndarray: ...
+```bash
+# Clone the repository
+git clone https://github.com/MartinMusiol1987/musiol-rag.git
+cd musiol-rag
 
-class DatabaseProvider(Protocol):
-    async def add_text(self, text: str) -> None: ...
-    async def get_texts(self) -> List[str]: ...
-    async def clear(self) -> None: ...
+# Install development dependencies
+pip install -e ".[dev]"
 
-class RetrieverProvider(Protocol):
-    async def update_index(self, database: DatabaseProvider) -> None: ...
-    async def get_relevant_texts(
-        self, 
-        query: str, 
-        database: DatabaseProvider,
-        k: Optional[int] = None
-    ) -> List[str]: ...
+# Run tests
+pytest tests/
 ```
 
 ## License
