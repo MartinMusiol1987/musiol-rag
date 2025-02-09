@@ -40,6 +40,14 @@ createdb rag_test  # Or your preferred database name
 export DATABASE_URL="postgresql://username@localhost/rag_test"  # Replace with your credentials
 ```
 
+**Note:** The `DATABASE_URL` environment variable is crucial for the script to connect to your PostgreSQL database. Ensure it is correctly set before running any tests or scripts that require database access. Below is an example of how to set it:
+
+```bash
+export DATABASE_URL="postgresql://your_username:your_password@localhost/your_database_name"
+```
+
+Replace `your_username`, `your_password`, and `your_database_name` with your actual PostgreSQL credentials and database name.
+
 ## Testing the Integration
 
 Run the detailed test example to verify the integration and understand how the system works:

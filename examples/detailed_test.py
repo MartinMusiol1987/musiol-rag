@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List, Tuple
 import os
 import getpass
+import time
 
 from musiol_rag.core.embeddings import EmbeddingModel
 from musiol_rag.core.retrieval import FAISSRetriever
@@ -111,6 +112,8 @@ def show_closest_chunks(closest_chunks: List[str], distances: List[float]):
         logger.info(f"Content: {chunk}")
 
 async def main():
+    start_time = time.time()  # Start timing
+    
     # Initialize components
     username = getpass.getuser()
     connection_string = os.environ.get(
@@ -125,23 +128,12 @@ async def main():
         # Clear any existing data
         await db.clear()
         
-        # Sample documents
-        sample_texts = [
-            """Quantum computing is a type of computation that harnesses quantum mechanics.
-            It uses qubits which can exist in multiple states simultaneously. This makes
-            quantum computers particularly good at solving certain types of problems that
-            classical computers struggle with.""",
-            
-            """Machine learning is a subset of artificial intelligence that enables
-            systems to learn and improve from experience. It uses various algorithms
-            and statistical models to analyze and draw inferences from patterns in data.
-            Deep learning, a subset of machine learning, uses neural networks with multiple layers.""",
-            
-            """Climate change refers to long-term shifts in global weather patterns
-            and temperatures. The primary driver is human activity, particularly the
-            emission of greenhouse gases. Effects include rising sea levels, extreme
-            weather events, and threats to biodiversity."""
-        ]
+        # Read sample documents from text files
+        sample_texts = []
+        text_folder = Path('examples/texts')
+        for text_file in text_folder.glob('*.txt'):
+            with open(text_file, 'r', encoding='utf-8') as file:
+                sample_texts.append(file.read())
         
         # Process and store each document with its chunks
         for text in sample_texts:
@@ -174,6 +166,12 @@ async def main():
         logger.info("\nFinal Database Stats:")
         logger.info(f"Documents: {metadata['document_count']}")
         logger.info(f"Chunks: {metadata['chunk_count']}")
+
+        # Calculate and show total execution time
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print_separator("Execution Time")
+        logger.info(f"Total execution time: {execution_time:.2f} seconds")
     
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)

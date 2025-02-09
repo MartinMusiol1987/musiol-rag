@@ -1,0 +1,4 @@
+Quantum computing is a type of computation that harnesses quantum mechanics.
+It uses qubits which can exist in multiple states simultaneously. This makes
+quantum computers particularly good at solving certain types of problems that
+classical computers struggle with. 
