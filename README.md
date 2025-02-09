@@ -124,4 +124,12 @@ Lower distance scores indicate higher relevance to the query.
 
 ## License
 
-MIT License - see LICENSE file for details. 
+MIT License - see LICENSE file for details.
+
+## Performance Metrics
+
+Below is a table showing the retrieval time for different versions of the system:
+
+| Version (Note) | Retrieval Time |
+|----------------|----------------|
+| Standard       | 1.40 sec       | 
