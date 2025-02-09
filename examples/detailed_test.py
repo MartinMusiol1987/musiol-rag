@@ -111,9 +111,7 @@ def show_closest_chunks(closest_chunks: List[str], distances: List[float]):
         logger.info(f"Distance: {distance:.4f}")
         logger.info(f"Content: {chunk}")
 
-async def main():
-    start_time = time.time()  # Start timing
-    
+async def main():    
     # Initialize components
     username = getpass.getuser()
     connection_string = os.environ.get(
@@ -151,15 +149,31 @@ async def main():
         chunk_vectors = embedding_model.encode(chunks)
         inspect_chunk_vectors(chunk_vectors, chunks)
         
+        start_time = time.time()  # Start timing    
+
         # Step 4: Create and show query vector
-        query = "How does quantum computing work?"
-        query_vector = inspect_query_vector(query, embedding_model)
-        
-        # Step 5: Find closest vectors using FAISS
-        closest_chunks, distances = await find_closest_vectors(query, embedding_model, db)
-        
-        # Step 6: Show closest chunks with distances
-        show_closest_chunks(closest_chunks, distances)
+        queries = [
+            "How does quantum computing work?",
+            "How does Alphabet reconcile its heavy reliance on advertising revenue with the push to diversify through acquisitions in non-core sectors?",
+            "What assumptions support the idea that an Amazon FBA business can be effectively integrated despite regulatory and competitive challenges?",
+            "How does the analysis account for market adoption risks inherent in integrating platforms like Eazi Apps into Alphabet's ecosystem?",
+            "In what ways can synergies with Google Services overcome the integration complexities of acquisitions in distinct industries, such as health and beauty?",
+            "How are long-term cultural and operational challenges addressed when merging a digital marketing agency like Monsta Media with Alphabet's established structure?",
+            "How does Rory Sutherland justify that reducing options—whether on TikTok or in online car customization—inevitably leads to improved user experience?",
+            "What empirical evidence underpins the claim that constraining choices (e.g., in QR code menus or design aesthetics) minimizes decision fatigue without sacrificing personalization?",
+            "How do the disparate topics—ranging from sex robots to Trump voting—coalesce into a coherent argument about choice reduction and its societal impact?",
+            "In advocating for simplicity, does Rory Sutherland adequately address potential trade-offs between control and consumer satisfaction in highly customizable environments?",
+            "How does the discussion of multiplicative dynamics versus additive utility challenge conventional economic models of consumer choice within digital and retail contexts?"
+        ]
+
+        for query in queries:
+            query_vector = inspect_query_vector(query, embedding_model)
+            
+            # Step 5: Find closest vectors using FAISS
+            closest_chunks, distances = await find_closest_vectors(query, embedding_model, db)
+            
+            # Step 6: Show closest chunks with distances
+            show_closest_chunks(closest_chunks, distances)
         
         # Show final database stats
         metadata = await db.get_metadata()
@@ -170,8 +184,8 @@ async def main():
         # Calculate and show total execution time
         end_time = time.time()
         execution_time = end_time - start_time
-        print_separator("Execution Time")
-        logger.info(f"Total execution time: {execution_time:.2f} seconds")
+        print_separator("Retrieval Time")
+        logger.info(f"Total retrieval time: {execution_time:.2f} seconds")
     
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
