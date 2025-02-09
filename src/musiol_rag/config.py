@@ -14,11 +14,10 @@ class Settings(BaseSettings):
     chunk_overlap: int = 50
     
     # Database settings
-    database_url: Optional[str] = None
-    database_type: str = "postgresql"  # or "sqlite"
+    database_url: str
     
     # FAISS settings
-    faiss_index_path: Optional[str] = "faiss_index.bin"
+    faiss_index_path: str = "faiss_index.bin"
 
     class Config:
         env_file = ".env"

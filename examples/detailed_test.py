@@ -80,45 +80,34 @@ def inspect_query_vector(query: str, embedding_model: EmbeddingModel):
     logger.info(query_vector[0][:10])
     return query_vector
 
-async def find_closest_vectors(query: str, chunks: List[str], embedding_model: EmbeddingModel, k: int = 4) -> Tuple[List[str], List[float]]:
+async def find_closest_vectors(query: str, embedding_model: EmbeddingModel, db: PostgreSQLDatabase, k: int = 4) -> Tuple[List[str], List[float]]:
     """Step 5: Find k closest vectors using FAISS."""
     print_separator("STEP 5: Closest Vectors")
     
-    # Initialize FAISS retriever
-    retriever = FAISSRetriever(embedding_model)
-    
-    # Create a temporary in-memory database for the chunks
-    from musiol_rag.database.memory import InMemoryDatabase
-    temp_db = InMemoryDatabase()
-    for chunk in chunks:
-        await temp_db.add_text(chunk)
+    # Initialize FAISS retriever with mandatory index path
+    retriever = FAISSRetriever(embedding_model, settings.faiss_index_path)
     
     # Update the index with our chunks
-    await retriever.update_index(temp_db)
+    await retriever.update_index(db)
     
-    # Get relevant texts
-    relevant_texts = await retriever.get_relevant_texts(query, temp_db, k=k)
+    # Get relevant texts and their distances
+    relevant_texts, distances = await retriever.get_relevant_texts(query, db, k=k)
     
-    # Get distances for logging
-    query_vector = embedding_model.encode_single(query)
-    chunk_vectors = embedding_model.encode(chunks)
-    distances = np.linalg.norm(chunk_vectors - query_vector, axis=1)
-    
-    # Log results
-    logger.info(f"Found {len(relevant_texts)} closest vectors")
-    for i, text in enumerate(relevant_texts, 1):
-        chunk_idx = chunks.index(text)
+    # Log results with distances
+    logger.info(f"Found {len(relevant_texts)} closest chunks")
+    for i, (text, distance) in enumerate(zip(relevant_texts, distances), 1):
         logger.info(f"\nChunk {i}:")
-        logger.info(f"Distance: {distances[chunk_idx]:.4f}")
-        logger.info(f"First 10 dimensions: {chunk_vectors[chunk_idx][:10]}")
+        logger.info(f"Distance: {distance:.4f}")
+        logger.info(f"Content: {text[:200]}")
     
-    return relevant_texts, [distances[chunks.index(text)] for text in relevant_texts]
+    return relevant_texts, distances
 
-def show_closest_chunks(closest_chunks: List[str]):
+def show_closest_chunks(closest_chunks: List[str], distances: List[float]):
     """Step 6: Show the text of closest chunks."""
     print_separator("STEP 6: Closest Chunks")
-    for i, chunk in enumerate(closest_chunks, 1):
+    for i, (chunk, distance) in enumerate(zip(closest_chunks, distances), 1):
         logger.info(f"\nChunk {i}:")
+        logger.info(f"Distance: {distance:.4f}")
         logger.info(f"Content: {chunk}")
 
 async def main():
@@ -136,7 +125,7 @@ async def main():
         # Clear any existing data
         await db.clear()
         
-        # Add sample documents
+        # Sample documents
         sample_texts = [
             """Quantum computing is a type of computation that harnesses quantum mechanics.
             It uses qubits which can exist in multiple states simultaneously. This makes
@@ -154,15 +143,16 @@ async def main():
             weather events, and threats to biodiversity."""
         ]
         
+        # Process and store each document with its chunks
         for text in sample_texts:
-            await db.add_text(text)
+            chunks = create_text_chunks([text])  # Create chunks for this document
+            await db.add_text(text, chunks)  # Store both full text and chunks
         
         # Step 1: Show original texts
         await inspect_original_texts(db)
         
-        # Step 2: Create and show chunks
-        texts = await db.get_texts()
-        chunks = create_text_chunks(texts)
+        # Step 2: Show chunks from database
+        chunks = await db.get_chunks()
         inspect_chunks(chunks)
         
         # Step 3: Create and show chunk vectors
@@ -174,10 +164,16 @@ async def main():
         query_vector = inspect_query_vector(query, embedding_model)
         
         # Step 5: Find closest vectors using FAISS
-        closest_chunks, distances = await find_closest_vectors(query, chunks, embedding_model)
+        closest_chunks, distances = await find_closest_vectors(query, embedding_model, db)
         
-        # Step 6: Show closest chunks
-        show_closest_chunks(closest_chunks)
+        # Step 6: Show closest chunks with distances
+        show_closest_chunks(closest_chunks, distances)
+        
+        # Show final database stats
+        metadata = await db.get_metadata()
+        logger.info("\nFinal Database Stats:")
+        logger.info(f"Documents: {metadata['document_count']}")
+        logger.info(f"Chunks: {metadata['chunk_count']}")
     
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
