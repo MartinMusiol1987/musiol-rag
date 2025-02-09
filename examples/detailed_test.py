@@ -166,14 +166,15 @@ async def main():
             "How does the discussion of multiplicative dynamics versus additive utility challenge conventional economic models of consumer choice within digital and retail contexts?"
         ]
 
-        for query in queries:
-            query_vector = inspect_query_vector(query, embedding_model)
-            
-            # Step 5: Find closest vectors using FAISS
-            closest_chunks, distances = await find_closest_vectors(query, embedding_model, db)
-            
-            # Step 6: Show closest chunks with distances
-            show_closest_chunks(closest_chunks, distances)
+        for _ in range(20):  # Run all questions 20x
+            for query in queries:
+                query_vector = inspect_query_vector(query, embedding_model)
+                
+                # Step 5: Find closest vectors using FAISS
+                closest_chunks, distances = await find_closest_vectors(query, embedding_model, db)
+                
+                # Step 6: Show closest chunks with distances
+                show_closest_chunks(closest_chunks, distances)
         
         # Show final database stats
         metadata = await db.get_metadata()
