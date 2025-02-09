@@ -138,3 +138,5 @@ Below is a table showing the retrieval time for different versions of the system
 
 Note: The "Standard" version is the initial implementation without caching. The "Cached" version includes caching of query results, and the "Optimized" version includes both caching and a more efficient retrieval method.
 
+**Performance Metrics**: The retrieval times were measured by running 11 queries 20 times each.
+
