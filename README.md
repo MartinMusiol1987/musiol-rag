@@ -140,3 +140,29 @@ Note: The "Standard" version is the initial implementation without caching. The 
 
 **Performance Metrics**: The retrieval times were measured by running 11 queries 20 times each.
 
+## Codebase Structure
+
+The `musiol_rag` project is organized as follows:
+
+```
+musiol_rag/
+│
+├── core/
+│   ├── chunking.py          # Handles text chunking with sentence boundary detection
+│   ├── embeddings.py        # Manages text encoding into vector embeddings
+│   ├── retrieval.py         # Implements FAISS-based retrieval system
+│   └── rag.py               # RAG (Retrieval-Augmented Generation) wrapper class
+│
+├── database/
+│   ├── base.py              # Base class for database interactions
+│   └── postgresql.py        # PostgreSQL database implementation
+│
+├── examples/
+│   ├── detailed_test.py     # Detailed test script for the RAG system
+│   └── texts/               # Sample text files for testing
+│
+├── config.py                # Configuration settings for the project
+├── LICENSE                  # License information
+└── README.md                # Project documentation
+```
+
