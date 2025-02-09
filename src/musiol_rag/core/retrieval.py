@@ -25,6 +25,9 @@ class FAISSRetriever:
         self.index_path = index_path
         self.text_lookup: List[str] = []
         
+        # Initialize cache dictionary for storing query results
+        self._cache = {}
+        
         # Initialize or load existing index
         if os.path.exists(index_path):
             try:
@@ -37,6 +40,9 @@ class FAISSRetriever:
     async def update_index(self, database: BaseDatabase):
         """Update the FAISS index with all chunks from the database."""
         try:
+            # Clear cache since the underlying data is changing
+            self._cache.clear()
+            
             # Get all chunks
             chunks = await database.get_chunks()
             if not chunks:
@@ -82,7 +88,15 @@ class FAISSRetriever:
         Raises:
             RuntimeError: If embedding generation or search fails
         """
+        # Default k
         k = k or settings.top_k
+        
+        # Construct cache key from query and k
+        cache_key = (query, k)
+        
+        # Return cached result if available
+        if cache_key in self._cache:
+            return self._cache[cache_key]
         
         try:
             # Encode query
@@ -104,4 +118,7 @@ class FAISSRetriever:
                 relevant_chunks.append(self.text_lookup[idx])
                 relevant_distances.append(dist)
         
-        return relevant_chunks, relevant_distances 
+        # Store result in cache
+        result = (relevant_chunks, relevant_distances)
+        self._cache[cache_key] = result
+        return result 
