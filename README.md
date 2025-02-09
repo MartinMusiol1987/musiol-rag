@@ -132,4 +132,4 @@ Below is a table showing the retrieval time for different versions of the system
 
 | Version (Note) | Retrieval Time |
 |----------------|----------------|
-| Standard       | 1.40 sec       | 
+| Standard       | 2.45 sec       | 
