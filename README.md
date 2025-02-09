@@ -10,7 +10,7 @@ A modular Retrieval-Augmented Generation (RAG) system designed for easy integrat
 - Intelligent text chunking with sentence boundary detection
 - Async support
 - PostgreSQL storage for both documents and chunks
-- Distance-based relevance scoring
+- Distance-based relevance scoring using cosine similarity
 
 ## Prerequisites
 
@@ -54,7 +54,7 @@ This script provides a comprehensive demonstration of the RAG system, showing ea
 2. **Intelligent Text Chunking**: Breaking documents into semantically meaningful pieces using sentence boundary detection
 3. **Chunk Storage**: Storing document chunks with references to their source documents
 4. **Embedding Generation**: Converting text into vector representations
-5. **Vector Search**: Finding the most relevant text chunks for a query with distance-based scoring
+5. **Vector Search**: Finding the most relevant text chunks for a query with distance-based scoring using cosine similarity
 6. **Results Inspection**: Detailed logging of the entire process with similarity scores
 
 The system uses PostgreSQL for document and chunk storage, and FAISS for efficient similarity search.
@@ -92,7 +92,7 @@ The retrieval process includes:
 - Storing both full documents and their chunks in PostgreSQL
 - Converting chunks to vector embeddings
 - Building and maintaining a FAISS index for efficient similarity search
-- Computing L2 distances between query and chunk vectors for relevance scoring
+- Computing cosine similarity between query and chunk vectors for relevance scoring
 
 ## Example Output
 
