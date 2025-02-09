@@ -133,7 +133,8 @@ Below is a table showing the retrieval time for different versions of the system
 | Version (Note) | Retrieval Time |
 |----------------|----------------|
 | Standard       | 24.50 sec       | 
-| Cached         | 21.05 sec       |
+| Cached (exact query)         | 21.05 sec       |
+| Cached (fuzzy query)         | ??      |
 
 Note: The "Standard" version is the initial implementation without caching. The "Cached" version includes caching of query results, and the "Optimized" version includes both caching and a more efficient retrieval method.
 
